@@ -1,0 +1,74 @@
+version: 2.1
+
+executors:
+  docker-executor:
+    docker:
+      - image: docker:18.06.3-ce-git
+    working_directory: /work/workspace
+
+  git-executor:
+    docker:
+      - image: alpine/git
+    working_directory: /work/workspace
+
+jobs:
+  start:
+    executor: git-executor
+    steps:
+      - attach_workspace:
+          at: /work/workspace
+      - checkout
+      - persist_to_workspace:
+          root: /work/workspace
+          paths: .
+
+  build-polish:
+    executor: docker-executor
+    steps:
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /work/workspace
+
+      - run: |
+          docker build -f Dockerfile -t polish_floorplanner_image  .
+          docker run --name polish_floorplanner_container polish_floorplanner_image bash -c "source /general/bin/activate && cd polish_floorplanner && coverage run --source=polish,tests setup.py test && coverage html && coverage xml && coverage-badge -o htmlcov/coverage.svg && mkdir -p /test-reports/polish_floorplanner && cp /polish_floorplanner/junit.xml /test-reports/polish_floorplanner && mkdir -p /coverage-reports/polish_floorplanner && cp -r /polish_floorplanner/coverage.xml /polish_floorplanner/htmlcov /coverage-reports/polish_floorplanner"
+          docker cp polish_floorplanner_container:coverage-reports .
+          docker cp polish_floorplanner_container:test-reports .
+          docker rm polish_floorplanner_container
+
+      - persist_to_workspace:
+          root: /work/workspace
+          paths:
+            - test-reports/polish_floorplanner
+            - coverage-reports/polish_floorplanner
+
+  finish:
+    executor: git-executor
+
+    steps:
+      - attach_workspace:
+          at: /work/workspace
+
+      - store_test_results:
+          path: test-reports
+
+      - store_artifacts:
+          path: test-reports
+
+      - store_artifacts:
+          path: coverage-reports
+
+
+workflows:
+  version: 2.1
+
+  full:
+    jobs:
+      - start
+      - build-polish:
+          requires:
+            - start 
+      - finish:
+          requires:
+            - build-polish
