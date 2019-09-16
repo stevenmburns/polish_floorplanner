@@ -12,19 +12,16 @@ def set_trans( t, wh_tbl):
             if obj.op == '|':
                 obj.l_tr = Trans(ox=0,oy=max(0,(rb[3] - lb[3])/2))
                 obj.r_tr = Trans(ox=lb[2],oy=max(0,(lb[3] - rb[3])/2))
-                bbox = [0,0,lb[2]+rb[2],max(lb[3],rb[3])]
+                return [0,0,lb[2]+rb[2],max(lb[3],rb[3])]
             else:
                 assert obj.op == '-'
                 obj.l_tr = Trans(ox=max(0,(rb[2] - lb[2])/2),oy=0)
                 obj.r_tr = Trans(ox=max(0,(lb[2] - rb[2])/2),oy=lb[3])
-                bbox = [0,0,max(lb[2],rb[2]),lb[3]+rb[3]]
-            return bbox
+                return [0,0,max(lb[2],rb[2]),lb[3]+rb[3]]
        else:
            (w,h) = wh_tbl[obj] if obj in wh_tbl else (1,1)
-           bbox = [0,0,w,h]
-           return bbox
-    bbox = aux( t)
-    return bbox
+           return [0,0,w,h]
+    return aux( t)
 
 def gen_tbl( t, wh_tbl): 
     tbl = {}
