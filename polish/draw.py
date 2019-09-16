@@ -8,22 +8,15 @@ def set_trans( t, wh_tbl):
     def aux( obj):
        if isinstance( obj, Tree):
             lb = aux( obj.l)
-            obj.l_tr = Trans()
             rb = aux( obj.r)
             if obj.op == '|':
-                obj.r_tr = Trans(ox=lb[2])
-                if lb[3] < rb[3]:
-                    obj.l_tr.oy = (rb[3] - lb[3])/2
-                if rb[3] < lb[3]:
-                    obj.r_tr.oy = (lb[3] - rb[3])/2
+                obj.l_tr = Trans(ox=0,oy=max(0,(rb[3] - lb[3])/2))
+                obj.r_tr = Trans(ox=lb[2],oy=max(0,(lb[3] - rb[3])/2))
                 bbox = [0,0,lb[2]+rb[2],max(lb[3],rb[3])]
             else:
                 assert obj.op == '-'
-                obj.r_tr = Trans(oy=lb[3])
-                if lb[2] < rb[2]:
-                    obj.l_tr.ox = (rb[2] - lb[2])/2
-                if rb[2] < lb[2]:
-                    obj.r_tr.ox = (lb[3] - rb[3])/2
+                obj.l_tr = Trans(ox=max(0,(rb[2] - lb[2])/2),oy=0)
+                obj.r_tr = Trans(ox=max(0,(lb[2] - rb[2])/2),oy=lb[3])
                 bbox = [0,0,max(lb[2],rb[2]),lb[3]+rb[3]]
             return bbox
        else:
