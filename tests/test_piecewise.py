@@ -21,16 +21,17 @@ def test_piecewise_hyperbola():
 
     assert pw( 2.5)  == 0.5
 
-def test_piecewise_vertical():
+def test_piecewise_discrete():
 
-    pw = Piecewise( [ (0.5,2), (0.5,1), (2,1)])
+    pw = Piecewise( [ (1,2), (2,2), (2,1)])
 
-    assert pw( 0.5)  == 1
-    assert pw(  1) == 1
-    assert pw( 1.5)  == 1
-    assert pw(  2) == 1
+    with pytest.raises(Exception): 
+        pw(  0.5)
 
-    assert pw( 2.5)  == 1
+    assert pw(  1)   == 2
+    assert pw(  1.5) == 2
+    assert pw(  2)   == 1
+    assert pw(  3)   == 1
 
 def test_piecewise_sum():
 
